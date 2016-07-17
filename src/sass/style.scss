@@ -1,5 +1,7 @@
-@import url('https://fonts.googleapis.com/css?family=Alfa+Slab+One|Lato|Oswald');
-$font: Open Sans, Arial;
+@import url('https://fonts.googleapis.com/css?family=Alfa+Slab+One|Lato');
+$font: Lato, Arial;
+$background: whitesmoke;
+$color: #3B3838;
 
 @mixin noSelect() {
   -webkit-touch-callout: none; /* iOS Safari */
@@ -34,6 +36,8 @@ $font: Open Sans, Arial;
 
 body {
   font-family: $font;
+  background-color: $background;
+  color: $color;
 }
 
 textarea {
@@ -41,8 +45,34 @@ textarea {
   border: none;
 }
 
+input {
+  color: $color;
+  border: none;
+  background-color: $background;
+}
+
+input:focus {
+  outline: none;
+}
+
+button {
+  width: 100px;
+  margin: 2px !important;
+  background-color: $color;
+  color: $background;
+  transition: background-color 0.15s ease-in-out;
+  transition: color 0.15s ease-in-out;
+}
+
+button:hover {
+  background-color: #CEC9C9;
+  color: $color;
+  transition: background-color 0.35s ease-in-out;
+  transition: color 0.35s ease-in-out;
+}
+
 #app-container {
-  height: 100vh;
+  height: 95vh;
 }
 
 #user-container {
@@ -64,13 +94,43 @@ textarea {
   height: 100%;
 }
 
+.user-img {
+  @include blur(15px);
+}
+
+#list-container-label {
+  text-align: center;
+  font-weight: bold;
+  font-size: 20px;
+}
+
 #list-container {
-  width: 100%;
   overflow: auto;
+  max-height: 62%;
+}
+
+#markdown-list {
+  padding-left: 0px !important;
+  width: 100%;
 }
 
 .markup-item {
   list-style-type: none;
+  font-size: 18px;
+  padding: 3px;
+  cursor: pointer;
+  padding-left: 5px;
+  
+  transition: background-color 0.35s ease-in-out;
+}
+
+.markup-item:hover {
+  background-color: #999;
+}
+
+.markdown-active {
+  background-color: $color;
+  color: $background;
 }
 
 #screen-container {
@@ -109,12 +169,8 @@ textarea {
 }
 
 #description {
-  height: 30px;
+  height: 35px;
   padding-left: 15px;
-}
-
-button {
-  width: 100px;
 }
 
 #error-container {
@@ -138,10 +194,17 @@ button {
   width: 100%;
   padding: 25px;
   border: 1px solid #999;
+  @include blur(5px);
+}
+
+.text-input:focus {
+  @include blur(25px);
+
 }
 
 #result {
   overflow: auto;
+  @include blur(5px);
 }
 
 .footer {

@@ -32,6 +32,7 @@ export default class Application extends Component {
     this.newMarkup = this.newMarkup.bind(this);
     this.saveOrCreateMarkup = this.saveOrCreateMarkup.bind(this);
     this.deleteMarkup = this.deleteMarkup.bind(this);
+    this.cancel = this.cancel.bind(this);
   }
 
   componentDidMount() {
@@ -61,6 +62,11 @@ export default class Application extends Component {
         inputScreen.style.maxHeight = '';
       }
     });
+
+    const data = JSON.parse(localStorage.getItem('data'));
+    if (data) {
+      this.setState(data);
+    }
   }
 
   login() {
@@ -71,10 +77,11 @@ export default class Application extends Component {
   fetchMarkups(id) {
     axios.get(`${API}/markup/${id}/`)
     .then((response) => {
-      this.setState({ availableMarkups: response.data.results, error: '' });
+      console.log(response.data);
+      this.setState({ availableMarkups: response.data, error: '' });
     })
     .catch(() => {
-      this.setState({ error: 'An error occured while retrieving your markups from the database.' });
+      this.setState({ error: 'An error occured while retrieving your markdowns from the database.' });
     });
   }
 
@@ -82,6 +89,9 @@ export default class Application extends Component {
     axios.put(`${API}/markup/${user}/${id}/`, { id, user, title, description, text })
     .then(() => {
       this.fetchMarkups(user);
+    })
+    .catch(() => {
+      this.setState({ error: 'An error occured while saving/creating your markdown.' });
     });
   }
 
@@ -98,14 +108,8 @@ export default class Application extends Component {
     const { id, user, title, description, text } = this.state;
     if (user) {
       this.saveMarkup(id, user.id, title, description, text);
-      this.setState({
-        id: undefined,
-        title: '',
-        description: '',
-        text: '',
-        error: '',
-      });
     }
+    this.cancel();
   }
 
   saveOrCreateMarkup() {    
@@ -124,7 +128,7 @@ export default class Application extends Component {
         this.fetchMarkups(user.id);
       })
       .catch(() => {
-        this.setState({ error: 'An error occured while saving/creating your markup.' });
+        this.setState({ error: 'An error occured while creating your markdown.' });
       });
     }
   }
@@ -134,13 +138,7 @@ export default class Application extends Component {
     if (user) {
       axios.delete(`${API}/markup/${user.id}/${id}/`)
       .then(() => {
-        this.setState({
-          id: undefined,
-          title: '',
-          description: '',
-          text: '',
-          error: '',
-        });
+        this.cancel();
         this.fetchMarkups(user.id);
       })
       .catch(() => {
@@ -149,15 +147,35 @@ export default class Application extends Component {
     }
   }
 
+  cancel() {
+    this.setState({
+      id: undefined,
+      title: '',
+      description: '',
+      text: '',
+      error: '',
+    });
+  }
+
+  saveData(title, description, text, id) {
+    if (title.trim().length > 0 || description.trim().length > 0 || text.trim().length > 0) {
+      localStorage.setItem('data', JSON.stringify({ id, title, description, text }));
+    }
+  }
+
   render() {
-    const { user, title, description, text, availableMarkups, error } = this.state;
-    const markups = availableMarkups.map((markup, index) => (
+    const { id, user, title, description, text, availableMarkups, error } = this.state;
+    this.saveData(title, description, text, id);
+
+
+    const minimum = title.trim().length > 0 ? true : false;
+    const markdowns = availableMarkups.map((markdown, index) => (
       <li
         key={index}
-        className="markup-item"
-        onClick={() => this.setActiveMarkup(markup)}
+        className={`markup-item ${id === markdown.id ? 'markdown-active' : ''}`}
+        onClick={() => this.setActiveMarkup(markdown)}
       >
-      {markup.title}
+      {markdown.title.length > 30 ? `${markdown.title.substring(0, 27).trim()}...` : markdown.title}
       </li>
     ));
 
@@ -185,10 +203,10 @@ export default class Application extends Component {
           </div>
           <div id="button-container" className="row">
             <div id="db-container" className="col-md-6" >
-              <button id="save" onClick={this.newMarkup} >New</button>
-              <button id="save" onClick={this.saveOrCreateMarkup} >Save</button>  
-              <button id="delete" onClick={this.deleteMarkup} >Delete</button>
-              <button id="delete" onClick={this.deleteMarkup} >Cancel</button>
+              <button className="btn btn-sm" onClick={this.newMarkup} >New</button>
+              {minimum ? <button className="btn btn-sm"onClick={this.saveOrCreateMarkup} >Save</button> : ''}
+              {id ? <button className="btn btn-sm"onClick={this.deleteMarkup} >Delete</button> : ''}
+              <button className="btn btn-sm" onClick={this.cancel} >Cancel</button>
             </div>
           </div>
           <div id="screen-container" className="row">
@@ -200,9 +218,12 @@ export default class Application extends Component {
               <div id="user-container" onClick={this.login}>
                 {user ? <User user={user} /> : <Login />}
               </div>
-              <ul id="list-container">
-                {markups}
-              </ul>
+              {user ? <div id="list-container-label" >Markdowns:</div> : ''}
+              <div id="list-container">
+                <ul id="markdown-list" >
+                  {markdowns}
+                </ul>
+              </div>
             </div>
           </div>
         </div>
