@@ -44,28 +44,41 @@ export default class Application extends Component {
       .then(response => {
         this.setState({ user: response.data });
         this.fetchMarkups(response.data.id);
+      })
+      .catch(() => {
+        this.setState({ error: 'There was an error logging in through Github.' });
       });
     }
 
     // set event listener on window
-    const infoColumn = document.getElementById('info-container');
-    const resultScreen = document.getElementById('result-screen');
-    const inputScreen = document.getElementById('input-screen');
-    window.addEventListener('resize', () => {
-      if (window.innerWidth < 775) {
-        infoColumn.style.display = 'none';
-        resultScreen.style.maxHeight = '400px';
-        inputScreen.style.maxHeight = '400px';
-      } else {
-        infoColumn.style.display = 'block';
-        resultScreen.style.maxHeight = '';
-        inputScreen.style.maxHeight = '';
-      }
-    });
-
+    window.addEventListener('resize', () => this.adjustScreen());
+    this.adjustScreen();
+    
+    // retrieve any data that was stored in local storage and set it into the this.state.
+    // this also helps when a user uses the github login to save their work
     const data = JSON.parse(localStorage.getItem('data'));
     if (data) {
       this.setState(data);
+    }
+  }
+
+  adjustScreen() {
+    const infoColumn = document.getElementById('info-container');
+    const resultScreen = document.getElementById('result-screen');
+    const inputScreen = document.getElementById('input-screen');
+    const error = document.getElementById('error-container');
+    if (window.innerWidth < 775) {
+      infoColumn.style.display = 'none';
+      resultScreen.style.maxHeight = '400px';
+      inputScreen.style.maxHeight = '400px';
+      error.style.height = '';
+      error.style.lineHeight = '';
+    } else {
+      infoColumn.style.display = 'block';
+      resultScreen.style.maxHeight = '';
+      inputScreen.style.maxHeight = '';
+      error.style.height = '75px';
+      error.style.lineHeight = '75px';
     }
   }
 
