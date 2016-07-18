@@ -27,7 +27,7 @@ export default class Application extends Component {
       availableMarkups: [],
       error: '',
     };
-    this.setActiveMarkup = this.setActiveMarkup.bind(this);
+    this.setActiveMarkdown = this.setActiveMarkdown.bind(this);
     this.login = this.login.bind(this);
     this.newMarkup = this.newMarkup.bind(this);
     this.saveOrCreateMarkup = this.saveOrCreateMarkup.bind(this);
@@ -35,7 +35,8 @@ export default class Application extends Component {
     this.cancel = this.cancel.bind(this);
   }
 
-  componentDidMount() {
+
+  componentWillMount() {
     // login user if available
     const url = window.location.href;
     const code = /code=([^&]+)/.exec(url);
@@ -43,25 +44,43 @@ export default class Application extends Component {
       axios.get(`${API}/auth/${code[1]}/`)
       .then(response => {
         this.setState({ user: response.data });
-        this.fetchMarkups(response.data.id);
+        this.fetchMarkdowns(response.data.id);
       })
       .catch(() => {
         this.setState({ error: 'There was an error logging in through Github.' });
       });
     }
+  }
 
+  componentDidMount() {
     // set event listener on window
     window.addEventListener('resize', () => this.adjustScreen());
     this.adjustScreen();
-    
+
     // retrieve any data that was stored in local storage and set it into the this.state.
     // this also helps when a user uses the github login to save their work
     const data = JSON.parse(localStorage.getItem('data'));
     if (data) {
-      this.setState(data);
+      this.setActiveMarkdown(data);
     }
   }
 
+  /**
+   * Given a markup set all of its fields to the current state
+   * @param  {object} markup - markup with id, title, description and text
+   */
+  setActiveMarkdown(markup) {
+    this.setState({
+      id: markup.id,
+      title: markup.title,
+      description: markup.description,
+      text: markup.text,
+    });
+  }
+
+  /**
+   * Adjust component CSS based on the width of the screen
+   */
   adjustScreen() {
     const infoColumn = document.getElementById('info-container');
     const resultScreen = document.getElementById('result-screen');
@@ -82,15 +101,21 @@ export default class Application extends Component {
     }
   }
 
+  /**
+   * Redirect the user to github to begin authentication procedure
+   */
   login() {
     const clientId = '94fd601ce029c233e7c4';
-    window.open(`https://github.com/login/oauth/authorize?redirect_uri=http://localhost:3000/&client_id=${clientId}`, '_self');    
+    window.open(`https://github.com/login/oauth/authorize?redirect_uri=http://localhost:3000/&client_id=${clientId}`, '_self');
   }
 
-  fetchMarkups(id) {
+  /**
+   * Given a user id, fetch all markdowns corresponding to that user from the database
+   * @param  {number} id - user's id
+   */
+  fetchMarkdowns(id) {
     axios.get(`${API}/markup/${id}/`)
     .then((response) => {
-      console.log(response.data);
       this.setState({ availableMarkups: response.data, error: '' });
     })
     .catch(() => {
@@ -98,25 +123,27 @@ export default class Application extends Component {
     });
   }
 
+  /**
+   * Save a markdown to the database and then refresh the list
+   * @param  {number} id - id of the markdown - null if this is a new markdown
+   * @param  {number} user - id of the user
+   * @param  {string} title - required title
+   * @param  {string} description
+   * @param  {string} text
+   */
   saveMarkup(id, user, title, description, text) {
     axios.put(`${API}/markup/${user}/${id}/`, { id, user, title, description, text })
     .then(() => {
-      this.fetchMarkups(user);
+      this.fetchMarkdowns(user);
     })
     .catch(() => {
       this.setState({ error: 'An error occured while saving/creating your markdown.' });
     });
   }
 
-  setActiveMarkup(markup) {
-    this.setState({
-      id: markup.id,
-      title: markup.title,
-      description: markup.description,
-      text: markup.text,
-    });
-  }
-
+  /**
+   * First save the existing markup and then clear all fields on the page
+   */
   newMarkup() {
     const { id, user, title, description, text } = this.state;
     if (user) {
@@ -125,7 +152,11 @@ export default class Application extends Component {
     this.cancel();
   }
 
-  saveOrCreateMarkup() {    
+  /**
+   * Called when user clicks save - if the markdown already exists update it in the
+   * database. If it does not then create it.
+   */
+  saveOrCreateMarkup() {
     const { id, user, title, description, text } = this.state;
     if (id && user) {
       this.saveMarkup(id, user.id, title, description, text);
@@ -137,8 +168,8 @@ export default class Application extends Component {
         text,
       })
       .then((response) => {
-        this.setActiveMarkup(response.data);
-        this.fetchMarkups(user.id);
+        this.setActiveMarkdown(response.data);
+        this.fetchMarkdowns(user.id);
       })
       .catch(() => {
         this.setState({ error: 'An error occured while creating your markdown.' });
@@ -146,13 +177,16 @@ export default class Application extends Component {
     }
   }
 
+  /**
+   * Delete a markdown from the database based on it's user id
+   */
   deleteMarkup() {
     const { id, user } = this.state;
     if (user) {
       axios.delete(`${API}/markup/${user.id}/${id}/`)
       .then(() => {
         this.cancel();
-        this.fetchMarkups(user.id);
+        this.fetchMarkdowns(user.id);
       })
       .catch(() => {
         this.setState({ error: 'An error occured while deleting your markup.' });
@@ -160,6 +194,9 @@ export default class Application extends Component {
     }
   }
 
+  /**
+   * Clear all of the fields back to empty/default
+   */
   cancel() {
     this.setState({
       id: undefined,
@@ -170,6 +207,13 @@ export default class Application extends Component {
     });
   }
 
+  /**
+   * Save a markdown to localStorage
+   * @param  {string} title
+   * @param  {string} description
+   * @param  {string} text
+   * @param  {number} id
+   */
   saveData(title, description, text, id) {
     if (title.trim().length > 0 || description.trim().length > 0 || text.trim().length > 0) {
       localStorage.setItem('data', JSON.stringify({ id, title, description, text }));
@@ -186,7 +230,7 @@ export default class Application extends Component {
       <li
         key={index}
         className={`markup-item ${id === markdown.id ? 'markdown-active' : ''}`}
-        onClick={() => this.setActiveMarkup(markdown)}
+        onClick={() => this.setActiveMarkdown(markdown)}
       >
       {markdown.title.length > 30 ? `${markdown.title.substring(0, 27).trim()}...` : markdown.title}
       </li>
