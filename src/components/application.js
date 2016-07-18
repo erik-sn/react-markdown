@@ -6,10 +6,9 @@ import React, { Component } from 'react';
 import marked from 'marked';
 import axios from 'axios';
 
-import Footer from './footer';
+import Title from './title';
+import InfoPanel from './infopanel';
 import Inputscreen from './inputscreen';
-import Login from './login';
-import User from './user';
 const API = 'http://localhost:8000/api';
 
 export default class Application extends Component {
@@ -223,37 +222,18 @@ export default class Application extends Component {
   render() {
     const { id, user, title, description, text, availableMarkups, error } = this.state;
     this.saveData(title, description, text, id);
-
-
     const minimum = title.trim().length > 0 ? true : false;
-    const markdowns = availableMarkups.map((markdown, index) => (
-      <li
-        key={index}
-        className={`markup-item ${id === markdown.id ? 'markdown-active' : ''}`}
-        onClick={() => this.setActiveMarkdown(markdown)}
-      >
-      {markdown.title.length > 30 ? `${markdown.title.substring(0, 27).trim()}...` : markdown.title}
-      </li>
-    ));
 
     return (
       <div>
         <div id="app-container" className="container" >
           <div id="top-container" className="row">
-            <div id="title-container" className="col-md-6">
-              <input
-                id="title"
-                value={title}
-                placeholder="Title"
-                onChange={(e) => this.setState({ title: e.target.value, error: '' })}
-              />
-              <input
-                id="description"
-                value={description}
-                placeholder="Description"
-                onChange={(e) => this.setState({ description: e.target.value, error: '' })}
-              />
-            </div>
+            <Title
+              title={title}
+              description={description}
+              titleChange={(e) => this.setState({ title: e.target.value, error: '' })}
+              descriptionChange={(e) => this.setState({ description: e.target.value, error: '' })}
+            />
             <div id="error-container" className="col-md-4" >
               <span>{error}</span>
             </div>
@@ -271,17 +251,7 @@ export default class Application extends Component {
             <div className="col-md-5 text-container result-screen" id="result-screen" >
               <div id="result" className="text-input" dangerouslySetInnerHTML={{ __html: marked(text) }}></div>
             </div>
-            <div id="info-container" className="col-md-2">
-              <div id="user-container" onClick={this.login}>
-                {user ? <User user={user} /> : <Login />}
-              </div>
-              {user ? <div id="list-container-label" >Markdowns:</div> : ''}
-              <div id="list-container">
-                <ul id="markdown-list" >
-                  {markdowns}
-                </ul>
-              </div>
-            </div>
+            <InfoPanel user={user} markdowns={availableMarkups} id={id} login={this.login} />
           </div>
         </div>
       </div>
