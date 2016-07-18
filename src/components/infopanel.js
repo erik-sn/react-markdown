@@ -7,7 +7,7 @@ const InfoPanel = (props) => {
     <li
       key={index}
       className={`markup-item ${props.id === markdown.id ? 'markdown-active' : ''}`}
-      onClick={() => this.setActiveMarkdown(markdown)}
+      onClick={() => props.setmarkdown(markdown)}
     >
     {markdown.title.length > 30 ? `${markdown.title.substring(0, 27).trim()}...` : markdown.title}
     </li>

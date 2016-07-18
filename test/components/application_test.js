@@ -5,13 +5,13 @@ import Application from '../../src/components/application';
 
 describe('Application', () => {
   let component;
-  window.localStorage = storageMock();
 
   const state = {
   };
 
   beforeEach(() => {
-    component = fRender(<Application />);
+    window.localStorage = storageMock();
+    component = fRender(<Application adjustScreen={() => 'test'}/>);
   });
 
   it('Renders something', () => {
@@ -20,10 +20,6 @@ describe('Application', () => {
 
   it('has a top level id of app-container', () => {
     expect(component.first().find('#app-container')).to.have.length(1);
-  });
-
-  it('has a footer', () => {
-    expect(component.first().find('.footer')).to.have.length(1);
   });
 
   it('has an input screen', () => {
