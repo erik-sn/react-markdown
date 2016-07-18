@@ -7,6 +7,7 @@ global.window = document.defaultView;
 global.navigator = {
   userAgent: 'node.js',
 };
+window.localStorage = storageMock();
 
 function sRender(ComponentClass, state = {}) {
   const component = shallow(ComponentClass)

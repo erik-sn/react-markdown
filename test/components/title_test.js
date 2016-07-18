@@ -4,7 +4,7 @@ import sinon from 'sinon';
 
 import Title from '../../src/components/title';
 
-describe('Info Panel', () => {
+describe('Title panel', () => {
   let component;
   let titleChange;
   let descriptionChange;
@@ -31,9 +31,26 @@ describe('Info Panel', () => {
     expect(component.find('input')).to.have.length(2);
   });
 
+  it('has a title field with the title props as text', () => {
+    expect(component.find('#title').props().value).to.equal(props.title);
+  });
+
+  it('When the title field is changed the changed value is returned', () => {
+    const title = component.find('#title');
+    title.simulate('change', { target: { value: 'changed title' } });
+    expect(titleChange.calledOnce).to.equal(true);
+    expect(titleChange.returnValues[0]).to.equal('changed title');
+  });
+
   it('has a description field with the description props as text', () => {
-      console.log(component.find('#description').html())
-    expect(component.find('#description').text()).to.equal(props.description);
+    expect(component.find('#description').props().value).to.equal(props.description);
+  });
+
+  it('When the description field is changed the changed value is returned', () => {
+    const title = component.find('#description');
+    title.simulate('change', { target: { value: 'changed description' } });
+    expect(descriptionChange.calledOnce).to.equal(true);
+    expect(descriptionChange.returnValues[0]).to.equal('changed description');
   });
 
 

@@ -223,7 +223,7 @@ export default class Application extends Component {
 
   render() {
     const { id, user, title, description, text, availableMarkups, error } = this.state;
-    this.saveData(title, description, text, id);
+    // this.saveData(title, description, text, id);
     const minimum = title.trim().length > 0 ? true : false;
 
     return (
@@ -242,10 +242,10 @@ export default class Application extends Component {
           </div>
           <div id="button-container" className="row">
             <div id="db-container" className="col-md-6" >
-              <button className="btn btn-sm" onClick={this.newMarkup} >New</button>
-              {minimum ? <button className="btn btn-sm"onClick={this.saveOrCreateMarkup} >Save</button> : ''}
-              {id ? <button className="btn btn-sm"onClick={this.deleteMarkup} >Delete</button> : ''}
-              <button className="btn btn-sm" onClick={this.cancel} >Cancel</button>
+              <button id="new-button" className="btn btn-sm" onClick={this.newMarkup} >New</button>
+              {minimum ? <button id="save-button" className="btn btn-sm"onClick={this.saveOrCreateMarkup} >Save</button> : ''}
+              {id ? <button id="delete-button" className="btn btn-sm"onClick={this.deleteMarkup} >Delete</button> : ''}
+              <button id="cancel-button" className="btn btn-sm" onClick={this.cancel} >Cancel</button>
             </div>
           </div>
           <div id="screen-container" className="row">
